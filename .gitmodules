@@ -1,0 +1,3 @@
+[submodule "src/chess-hacks-training-main"]
+	path = src/chess-hacks-training-main
+	url = https://github.com/mchoi-cs/chess-hacks-training-main.git
