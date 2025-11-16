@@ -6,13 +6,8 @@ import torch
 import numpy as np
 import os
 
-import sys
-# Add the chess-hacks-training-main directory to the path
-chess_hacks_path = os.path.join(os.path.dirname(__file__), 'chess-hacks-training-main')
-sys.path.insert(0, chess_hacks_path)
-
-from import_model import load_pytorch_weights
-from getTensorFromFen import get_tensor_bytes_from_fen
+from .import_model import load_pytorch_weights
+from .getTensorFromFen import get_tensor_bytes_from_fen
 
 # Write code here that runs once
 # Can do things like load models from huggingface, make connections to subprocesses, etc
