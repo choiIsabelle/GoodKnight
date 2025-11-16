@@ -122,7 +122,7 @@ def fen_to_tensor_custom(fen: str) -> np.ndarray:
     return tensor
 
 
-_MODEL = None
+_MODEL = ChessEvaluationCNN(num_filters=128, num_res_blocks=5, dropout_rate=0.3)
 _DEVICE = torch.device("cpu")
 
 
