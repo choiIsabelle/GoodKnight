@@ -5,7 +5,7 @@ import time
 import torch
 import numpy as np
 import os
-
+from src.utils import chess_manager
 from .import_model import load_pytorch_weights
 from .getTensorFromFen import get_tensor_bytes_from_fen
 
@@ -68,13 +68,8 @@ def test_func(ctx: GameContext):
 
     move_probs = {move: prob for move, prob in zip(move_evaluations.keys(), probabilities)}
     ctx.logProbabilities(move_probs)
-    return best_move
-
-
     print(f"Best move evaluation: {move_evaluations[best_move]:.4f}")
-
     return best_move
-
 
 @chess_manager.reset
 def reset_func(ctx: GameContext):
