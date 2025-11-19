@@ -1,6 +1,18 @@
+# Python
 __pycache__
 .venv
 venv
+
+# Node.js / Next.js
+devtools/node_modules
+devtools/.next
+devtools/out
+devtools/.env.local
+devtools/npm-debug.log*
+devtools/yarn-debug.log*
+devtools/yarn-error.log*
+
+# General
 .env.local
 .env
-devtools
+.DS_Store

@@ -11,12 +11,9 @@ from src import main
 
 app = FastAPI()
 
-# Allow CORS from the frontend host (set this to your Cloudflare Pages site
-# or use ["*"] for development). If you prefer, replace the literal origin
-# below with an environment-driven value.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-cloudflare-site.pages.dev"],  # or ["*"] in dev
+    allow_origins=["http://goodknight.pages.dev/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
