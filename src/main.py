@@ -2,10 +2,11 @@ import os
 import json
 import random
 import time
+
 import torch
 import numpy as np
-import os
-from src.utils import chess_manager
+
+from .utils import chess_manager, GameContext
 from .import_model import load_pytorch_weights
 from .getTensorFromFen import get_tensor_bytes_from_fen
 
