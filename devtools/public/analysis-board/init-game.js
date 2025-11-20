@@ -46,9 +46,16 @@ window.initAnalysisBoard = async function (gameData) {
           typeof gameData.timeleft === "number" ? gameData.timeleft : 60000;
 
         console.log("initAnalysisBoard: sending request to /api/bot or remote backend");
-        const prefix = (window.REMOTE_BACKEND_URL && String(window.REMOTE_BACKEND_URL).trim().length > 0)
-          ? String(window.REMOTE_BACKEND_URL).replace(/\/$/, "")
+        let prefix = (window.REMOTE_BACKEND_URL && String(window.REMOTE_BACKEND_URL).trim().length > 0)
+          ? String(window.REMOTE_BACKEND_URL).trim()
           : "";
+        // If someone set the backend as an IP or host without protocol (e.g. 100.20.92.101)
+        // the browser will treat it as a relative path and generate URLs like
+        // https://goodknight.pages.dev/100.20.92.101/move. Ensure we have a scheme.
+        if (prefix && !/^https?:\/\//i.test(prefix)) {
+          prefix = `https://${prefix}`;
+        }
+        prefix = prefix.replace(/\/$/, "");
         const url = prefix ? `${prefix}/move` : "/api/bot";
 
         const res = await fetch(url, {

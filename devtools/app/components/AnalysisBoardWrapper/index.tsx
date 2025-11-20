@@ -24,7 +24,15 @@ export default function AnalysisBoardWrapper() {
     try {
       const env = process.env.NEXT_PUBLIC_REMOTE_BACKEND_URL;
       if (env && typeof env === "string" && env.trim().length > 0) {
-        return env.replace(/\/$/, "");
+        let val = env.trim();
+        // If the env was set without a protocol (e.g. an IP address),
+        // assume https and prepend it so the browser doesn't treat the
+        // prefix as a relative path (which produces URLs like
+        // https://goodknight.pages.dev/100.20.92.101/move).
+        if (!/^https?:\/\//i.test(val)) {
+          val = `https://${val}`;
+        }
+        return val.replace(/\/$/, "");
       }
     } catch (e) {
       // process.env access may not exist in some test environments; ignore.
