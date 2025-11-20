@@ -56,7 +56,7 @@ window.initAnalysisBoard = async function (gameData) {
           prefix = `https://${prefix}`;
         }
         prefix = prefix.replace(/\/$/, "");
-        const url = 'http://74.220.56.0/api/bot';
+        const url = 'https://goodknight-lnqr.onrender.com/api/bot';
 
         const res = await fetch(url, {
           method: "POST",
