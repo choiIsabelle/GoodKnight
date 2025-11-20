@@ -1,10 +1,8 @@
+// Placeholder /api/reload for static export. For dev, run the Python server locally
+// and use NEXT_PUBLIC_REMOTE_BACKEND_URL in the frontend to call the backend.
+export const dynamic = "force-static";
 import { NextResponse } from "next/server";
-import { ensureServerRunning, restartServer } from "../server";
-
-export const runtime = "nodejs";
 
 export async function POST() {
-  restartServer("manual");
-  await ensureServerRunning();
-  return NextResponse.json({ status: "reloaded" });
+  return NextResponse.json({ reloaded: false, message: "Reload disabled in static export" });
 }

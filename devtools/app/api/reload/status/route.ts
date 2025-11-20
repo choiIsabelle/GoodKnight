@@ -1,9 +1,7 @@
+// Static /api/reload/status placeholder for export builds.
+export const dynamic = "force-static";
 import { NextResponse } from "next/server";
-import { getLastRestartInfo } from "../../server";
-
-export const runtime = "nodejs";
 
 export async function GET() {
-  const info = getLastRestartInfo();
-  return NextResponse.json(info);
+  return NextResponse.json({ lastRestartAt: null, lastRestartReason: null });
 }
