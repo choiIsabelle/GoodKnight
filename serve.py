@@ -11,9 +11,19 @@ from src import main
 
 app = FastAPI()
 
+# Configure CORS using an environment variable so deployments can set the
+# allowed origins without editing code. Set ALLOWED_ORIGINS to a
+# comma-separated list of origins (example: "https://site.pages.dev,https://app.example.com").
+allowed = os.getenv("ALLOWED_ORIGINS")
+if allowed:
+    allow_list = [o.strip() for o in allowed.split(",") if o.strip()]
+else:
+    # Default to the common Cloudflare Pages pattern if not provided.
+    allow_list = ["https://goodknight.pages.dev"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://goodknight.pages.dev/"],
+    allow_origins=allow_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

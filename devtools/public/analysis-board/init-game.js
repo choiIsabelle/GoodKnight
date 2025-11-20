@@ -45,9 +45,13 @@ window.initAnalysisBoard = async function (gameData) {
         const timeleft =
           typeof gameData.timeleft === "number" ? gameData.timeleft : 60000;
 
-        console.log("initAnalysisBoard: sending request to /api/bot");
+        console.log("initAnalysisBoard: sending request to /api/bot or remote backend");
+        const prefix = (window.REMOTE_BACKEND_URL && String(window.REMOTE_BACKEND_URL).trim().length > 0)
+          ? String(window.REMOTE_BACKEND_URL).replace(/\/$/, "")
+          : "";
+        const url = prefix ? `${prefix}/move` : "/api/bot";
 
-        const res = await fetch("/api/bot", {
+        const res = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

@@ -32,6 +32,17 @@ export default function AnalysisBoardWrapper() {
     return "";
   };
 
+  // Expose the backend prefix to the static analysis-board scripts that are
+  // loaded from /public. They run outside of the Next build system, so we
+  // inject the computed prefix onto window so those scripts can pick it up.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const prefix = getBackendPrefix();
+      (window as any).REMOTE_BACKEND_URL = prefix;
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 

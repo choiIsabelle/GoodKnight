@@ -1,3 +1,60 @@
+# GoodKnight
+
+## Deployment (Cloudflare Pages frontend + Render backend)
+
+If you deploy the frontend as a static site (Cloudflare Pages) and the Python backend on Render, follow these steps.
+
+1. Cloudflare Pages (frontend)
+
+  - Root directory: `devtools`
+  - Build command: `npm run build`
+  - Build output directory: `out`
+  - Environment variables (set in Pages -> Settings -> Environment variables):
+    - `NEXT_PUBLIC_REMOTE_BACKEND_URL` = `https://goodknight-lnqr.onrender.com`
+
+  Notes: Next.js inlines `NEXT_PUBLIC_*` variables at build time. Setting `NEXT_PUBLIC_REMOTE_BACKEND_URL` on Cloudflare ensures the built frontend will call your Render backend at runtime.
+
+2. Render (backend)
+
+  - Start command: `uvicorn serve:app --host 0.0.0.0 --port $PORT`
+  - Environment variables (set in Render service settings):
+    - `ALLOWED_ORIGINS` = the origin(s) of your frontend, for example:
+     `https://your-site.pages.dev`  (or comma-separated list)
+
+  Example `ALLOWED_ORIGINS` value:
+
+  `https://your-site.pages.dev`
+
+  The backend reads `ALLOWED_ORIGINS` and configures CORS accordingly. If you do not set `ALLOWED_ORIGINS`, the server defaults to `https://goodknight.pages.dev`.
+
+3. Local development
+
+  - To run locally, start the backend and frontend separately:
+
+    Backend (in project root):
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    uvicorn serve:app --host 0.0.0.0 --port 5058
+    ```
+
+    Frontend (in `devtools`):
+    ```bash
+    cd devtools
+    npm install
+    # point the frontend at the local backend during dev
+    echo "NEXT_PUBLIC_REMOTE_BACKEND_URL=http://localhost:5058" > .env.local
+    npm run dev
+    ```
+
+4. Notes
+
+  - We removed the Next.js API routes from `devtools/app/api/*` for the static export workflow. The frontend will call the Render backend directly when `NEXT_PUBLIC_REMOTE_BACKEND_URL` is set.
+  - Make sure `ALLOWED_ORIGINS` on Render includes your Cloudflare Pages domain to avoid CORS issues.
+  - If you want a different setup (for example building frontend on Render or keeping Next API routes for local dev), tell me and I can adjust the configuration.
+
+````
 # ChessHacks Starter Bot
 
 This is a starter bot for ChessHacks. It includes a basic bot and devtools. This is designed to help you get used to what the interface for building a bot feels like, as well as how to scaffold your own bot.
