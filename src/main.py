@@ -73,6 +73,32 @@ def test_func(ctx: GameContext):
 
     return best_move
 
+def alpha_beta(node: GameContext, depth: int, alpha: float = float('-inf'), beta: float = float('inf'), maximizingPlayer: bool = True):
+    if depth == 0:
+        # TODO fit in model evaluation here and then get it into the main
+        # test function
+        # model evaluation
+        return 0
+    elif maximizingPlayer:
+        value = float('-inf')
+        for move in node.board.generate_legal_moves():
+            node = node.board.push(move)
+            value = max(value, alpha_beta, node, depth - 1, alpha, beta, False)
+            node.board.pop()
+            if value >= beta:
+                break
+            alpha = max(alpha, value)
+        return value
+    elif not maximizingPlayer:
+        value = float('inf')
+        for move in node.board.generate_legal_moves():
+            node = node.board.push(move)
+            value = min(value, alpha_beta, node, depth - 1, alpha, beta, True)
+            node.board.pop()
+            if value <= alpha:
+                break
+            beta = min(beta, value)
+        return value
 
 @chess_manager.reset
 def reset_func(ctx: GameContext):
