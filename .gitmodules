@@ -1,3 +1,6 @@
 [submodule "src/chess-hacks-training-main"]
 	path = src/chess-hacks-training-main
 	url = https://github.com/mchoi-cs/chess-hacks-training-main.git
+[submodule "src/GoodKnightCommon"]
+	path = src/GoodKnightCommon
+	url = https://github.com/EricHayter/GoodKnightCommon.git
