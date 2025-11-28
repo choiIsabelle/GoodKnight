@@ -5,100 +5,110 @@ import time
 import torch
 import numpy as np
 import os
+from pathlib import Path
+import time
 
-from .import_model import load_pytorch_weights
-from .getTensorFromFen import get_tensor_bytes_from_fen
+import sys
+sys.path.insert(0, str(Path(__file__).parent / 'chess-hacks-training-main'))
+sys.path.insert(0, str(Path(__file__).parent / 'GoodKnightCommon'))
+
+from chess_cnn import create_model
+from fen_to_tensor import get_tensor_bytes_from_fen
 
 # Write code here that runs once
 # Can do things like load models from huggingface, make connections to subprocesses, etc
-weights_path = os.path.join(os.path.dirname(__file__), 'weights', 'weights.pth')
+weights_path = Path(__file__).parent / 'weights' / 'weights.pth'
 print(f"Loading model weights from {weights_path}...")
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model = load_pytorch_weights(weights_path, num_filters=256, num_res_blocks=20, device=device)
+
+# Create model and load weights
+model = create_model(num_filters=32, num_res_blocks=2, device=device)
+state_dict = torch.load(weights_path, map_location=device, weights_only=True)
+model.load_state_dict(state_dict)
+model.eval()
 print(f"Model loaded successfully on device: {device}")
 
 
 @chess_manager.entrypoint
 def test_func(ctx: GameContext):
+    start = time.time()
     # This gets called every time the model needs to make a move
     # Return a python-chess Move object that is a legal move for the current position
-
-    print("Cooking move...")
-
     legal_moves = list(ctx.board.generate_legal_moves())
     if not legal_moves:
         ctx.logProbabilities({})
         raise ValueError("No legal moves available (i probably lost didn't i)")
 
-    # Evaluate each legal move
-    move_evaluations = {}
-    for move in legal_moves:
-        # Make the move on a copy of the board
-        ctx.board.push(move)
+    # Use alpha-beta pruning to find the best move
+    search_depth = 3  # Adjust depth as needed
+    maximizing = ctx.board.turn  # True if white to move, False if black
 
-        # Get FEN of the resulting position
-        fen = ctx.board.fen()
+    evaluation, best_move = alpha_beta(ctx, search_depth, maximizingPlayer=maximizing)
+    end = time.time()
 
-        # Convert FEN to tensor
-        tensor_bytes = get_tensor_bytes_from_fen(fen)
-        tensor = np.frombuffer(tensor_bytes, dtype=np.uint8).reshape(18, 8, 8)
-
-        # Get model evaluation
-        input_tensor = torch.from_numpy(tensor).float().unsqueeze(0).to(device)
-        with torch.no_grad():
-            evaluation = model(input_tensor).item()
-
-        # Undo the move
-        ctx.board.pop()
-
-        # Store evaluation (negate if we're black, since model evaluates from white's perspective)
-        if ctx.board.turn:  # White to move
-            move_evaluations[move] = evaluation
-        else:  # Black to move
-            move_evaluations[move] = -evaluation
-
-    # Find the best move (highest evaluation)
-    best_move = max(move_evaluations, key=move_evaluations.get)
-
-    # Convert evaluations to probabilities using softmax with temperature
-    temperature = 0.1  # Lower temperature = more greedy
-    eval_values = np.array(list(move_evaluations.values()))
-    exp_values = np.exp((eval_values - np.max(eval_values)) / temperature)
-    probabilities = exp_values / np.sum(exp_values)
-
-    move_probs = {move: prob for move, prob in zip(move_evaluations.keys(), probabilities)}
-    ctx.logProbabilities(move_probs)
-
-    print(f"Best move evaluation: {move_evaluations[best_move]:.4f}")
+    print(f"Found best move evaluation of {evaluation:.4f} in {round(end - start, 3)}s")
 
     return best_move
 
-def alpha_beta(node: GameContext, depth: int, alpha: float = float('-inf'), beta: float = float('inf'), maximizingPlayer: bool = True):
-    if depth == 0:
-        # TODO fit in model evaluation here and then get it into the main
-        # test function
-        # model evaluation
-        return 0
-    elif maximizingPlayer:
-        value = float('-inf')
-        for move in node.board.generate_legal_moves():
-            node = node.board.push(move)
-            value = max(value, alpha_beta, node, depth - 1, alpha, beta, False)
-            node.board.pop()
-            if value >= beta:
-                break
-            alpha = max(alpha, value)
-        return value
-    elif not maximizingPlayer:
-        value = float('inf')
-        for move in node.board.generate_legal_moves():
-            node = node.board.push(move)
-            value = min(value, alpha_beta, node, depth - 1, alpha, beta, True)
-            node.board.pop()
-            if value <= alpha:
-                break
-            beta = min(beta, value)
-        return value
+
+def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('inf'), maximizingPlayer=True):
+    """
+    Alpha-beta pruning search that returns (evaluation, best_move, pv).
+    """
+    legal_moves = list(ctx.board.generate_legal_moves())
+
+    # Leaf node
+    if depth == 0 or not legal_moves:
+        fen = ctx.board.fen()
+        tensor = get_tensor_bytes_from_fen(fen)
+        input_tensor = torch.from_numpy(tensor).float().unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            evaluation = model(input_tensor).item()
+
+        return (evaluation, None, [])
+
+    if maximizingPlayer:
+        max_eval = float('-inf')
+        best_move = None
+        best_pv = []
+
+        for move in legal_moves:
+            ctx.board.push(move)
+            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, False)
+            ctx.board.pop()
+
+            if eval_score > max_eval:
+                max_eval = eval_score
+                best_move = move
+                best_pv = [move] + child_pv
+
+            alpha = max(alpha, eval_score)
+            if beta <= alpha:
+                break  # Beta cutoff
+
+        return (max_eval, best_move, best_pv)
+
+    else:
+        min_eval = float('inf')
+        best_move = None
+        best_pv = []
+
+        for move in legal_moves:
+            ctx.board.push(move)
+            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, True)
+            ctx.board.pop()
+
+            if eval_score < min_eval:
+                min_eval = eval_score
+                best_move = move
+                best_pv = [move] + child_pv
+
+            beta = min(beta, eval_score)
+            if beta <= alpha:
+                break  # Alpha cutoff
+
+        return (min_eval, best_move, best_pv)
 
 @chess_manager.reset
 def reset_func(ctx: GameContext):
