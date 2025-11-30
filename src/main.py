@@ -29,6 +29,9 @@ model.eval()
 print(f"Model loaded successfully on device: {device}")
 
 
+# Global PV table to store principal variations indexed by depth from root
+pv_table = {}
+
 @chess_manager.entrypoint
 def test_func(ctx: GameContext):
     start = time.time()
@@ -39,21 +42,38 @@ def test_func(ctx: GameContext):
         ctx.logProbabilities({})
         raise ValueError("No legal moves available (i probably lost didn't i)")
 
-    # Use alpha-beta pruning to find the best move
+    # Use iterative deepening with PV move ordering
     search_depth = 3  # Adjust depth as needed
     maximizing = ctx.board.turn  # True if white to move, False if black
 
-    evaluation, best_move = alpha_beta(ctx, search_depth, maximizingPlayer=maximizing)
+    # Clear PV table for new search
+    global pv_table
+    pv_table = {}
+
+    best_move = None
+    best_eval = None
+
+    # Iterative deepening to build up PV for move ordering
+    for depth in range(1, search_depth + 1):
+        evaluation, move, pv = alpha_beta(ctx, depth, maximizingPlayer=maximizing)
+        best_move = move
+        best_eval = evaluation
+
+        # Store PV in table indexed by depth from root
+        pv_table = {}
+        for i, pv_move in enumerate(pv):
+            pv_table[i] = pv_move
+
     end = time.time()
 
-    print(f"Found best move evaluation of {evaluation:.4f} in {round(end - start, 3)}s")
+    print(f"Found best move evaluation of {best_eval:.4f} in {round(end - start, 3)}s")
 
     return best_move
 
 
-def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('inf'), maximizingPlayer=True):
+def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('inf'), maximizingPlayer=True, ply_from_root=0):
     """
-    Alpha-beta pruning search that returns (evaluation, best_move, pv).
+    Alpha-beta pruning search with PV move ordering that returns (evaluation, best_move, pv).
     """
     legal_moves = list(ctx.board.generate_legal_moves())
 
@@ -68,6 +88,13 @@ def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('in
 
         return (evaluation, None, [])
 
+    # PV move ordering: search PV move first if available
+    pv_move = pv_table.get(ply_from_root)
+    if pv_move and pv_move in legal_moves:
+        # Move PV move to front of list
+        legal_moves.remove(pv_move)
+        legal_moves.insert(0, pv_move)
+
     if maximizingPlayer:
         max_eval = float('-inf')
         best_move = None
@@ -75,7 +102,7 @@ def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('in
 
         for move in legal_moves:
             ctx.board.push(move)
-            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, False)
+            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, False, ply_from_root + 1)
             ctx.board.pop()
 
             if eval_score > max_eval:
@@ -96,7 +123,7 @@ def alpha_beta(ctx: GameContext, depth: int, alpha=float('-inf'), beta=float('in
 
         for move in legal_moves:
             ctx.board.push(move)
-            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, True)
+            eval_score, _, child_pv = alpha_beta(ctx, depth - 1, alpha, beta, True, ply_from_root + 1)
             ctx.board.pop()
 
             if eval_score < min_eval:
