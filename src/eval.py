@@ -1,25 +1,29 @@
+"""
+eval.py
+
+This file contains the logic required for determining the best move to be
+played in a given position (see find_best_move). This file also initializes
+the pytorch model by reading the weights/ directory.
+"""
+
+from pathlib import Path
 from chess import Move, Board
 import torch
-import numpy as np
-from pathlib import Path
-import sys
 
-sys.path.insert(0, str(Path(__file__).parent / 'chess-hacks-training-main'))
-sys.path.insert(0, str(Path(__file__).parent / 'GoodKnightCommon'))
 
-from chess_cnn import create_model
-from fen_to_tensor import get_tensor_bytes_from_fen
+from .GoodKnightCommon.fen_to_tensor import get_tensor_bytes_from_fen
+from .GoodKnightModel.chess_cnn import create_model
 
-weights_path = Path(__file__).parent / 'weights' / 'weights.pth'
+weights_path = Path(__file__).parent / "weights" / "weights.pth"
 print(f"Loading model weights from {weights_path}...")
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Create model and load weights
-model = create_model(num_filters=32, num_res_blocks=2, device=device)
-state_dict = torch.load(weights_path, map_location=device, weights_only=True)
+model = create_model(num_filters=32, num_res_blocks=2, device=DEVICE)
+state_dict = torch.load(weights_path, map_location=DEVICE, weights_only=True)
 model.load_state_dict(state_dict)
 model.eval()
-print(f"Model loaded successfully on device: {device}")
+print(f"Model loaded successfully on device: {DEVICE}")
 
 
 def find_best_move(board: Board) -> Move:
@@ -35,18 +39,21 @@ def find_best_move(board: Board) -> Move:
     maximizing = board.turn  # True if white to move, False if black
 
     best_move = None
-    best_eval = None
 
     # Iterative deepening
     for depth in range(1, search_depth + 1):
-        evaluation, move = alpha_beta(board, depth, maximizingPlayer=maximizing)
-        best_move = move
-        best_eval = evaluation
+        _, best_move = alpha_beta(board, depth, maximizing_player=maximizing)
 
     return best_move
 
 
-def alpha_beta(board: Board, depth: int, alpha=float('-inf'), beta=float('inf'), maximizingPlayer=True) -> tuple[float, Move]:
+def alpha_beta(
+    board: Board,
+    depth: int,
+    alpha=float("-inf"),
+    beta=float("inf"),
+    maximizing_player=True,
+) -> tuple[float, Move]:
     """
     Alpha-beta pruning search that returns (evaluation, best_move).
     """
@@ -56,15 +63,15 @@ def alpha_beta(board: Board, depth: int, alpha=float('-inf'), beta=float('inf'),
     if depth == 0 or not legal_moves:
         fen = board.fen()
         tensor = get_tensor_bytes_from_fen(fen)
-        input_tensor = torch.from_numpy(tensor).float().unsqueeze(0).to(device)
+        input_tensor = torch.from_numpy(tensor).float().unsqueeze(0).to(DEVICE)
 
         with torch.no_grad():
             evaluation = model(input_tensor).item()
 
         return (evaluation, None)
 
-    if maximizingPlayer:
-        max_eval = float('-inf')
+    if maximizing_player:
+        max_eval = float("-inf")
         best_move = None
 
         for move in legal_moves:
@@ -83,7 +90,7 @@ def alpha_beta(board: Board, depth: int, alpha=float('-inf'), beta=float('inf'),
         return (max_eval, best_move)
 
     else:
-        min_eval = float('inf')
+        min_eval = float("inf")
         best_move = None
 
         for move in legal_moves:
