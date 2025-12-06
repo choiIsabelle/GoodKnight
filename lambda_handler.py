@@ -23,14 +23,30 @@ def handler(event, context):
     }
     """
 
+    # CORS headers
+    cors_headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    }
+
+    # Handle preflight OPTIONS request
+    if event.get('httpMethod') == 'OPTIONS' or event.get('requestContext', {}).get('http', {}).get('method') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': cors_headers,
+            'body': ''
+        }
+
     # Handle API Gateway format (has 'body' key) or direct invocation
     if 'body' in event:
         try:
-            body = json.loads(event['body'])
+            body = json.loads(event['body']) if isinstance(event['body'], str) else event['body']
         except json.JSONDecodeError:
             return {
                 'statusCode': 400,
-                'headers': {'Content-Type': 'application/json'},
+                'headers': cors_headers,
                 'body': json.dumps({'error': 'Invalid JSON in request body'})
             }
     else:
@@ -40,7 +56,7 @@ def handler(event, context):
     if 'fen' not in body:
         return {
             'statusCode': 400,
-            'headers': {'Content-Type': 'application/json'},
+            'headers': cors_headers,
             'body': json.dumps({'error': 'Missing fen in request body'})
         }
 
@@ -55,7 +71,7 @@ def handler(event, context):
         time_taken = (time.perf_counter() - start_time) * 1000
         return {
             'statusCode': 500,
-            'headers': {'Content-Type': 'application/json'},
+            'headers': cors_headers,
             'body': json.dumps({
                 'move': None,
                 'exception': str(e),
@@ -64,7 +80,7 @@ def handler(event, context):
 
     return {
         'statusCode': 200,
-        'headers': {'Content-Type': 'application/json'},
+        'headers': cors_headers,
         'body': json.dumps({
             'move': move.uci(),
         })
