@@ -1,0 +1,137 @@
+.chess-game {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #161512;
+  min-height: 100vh;
+}
+
+.game-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.game-header h1 {
+  margin: 0 0 10px 0;
+  color: #f0f0f0;
+  font-size: 2.5rem;
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #a8a8a8 0%, #f0f0f0 50%, #a8a8a8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.api-warning {
+  background-color: #3a2f1b;
+  border: 1px solid #c59a2c;
+  color: #f0c674;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.game-container {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.about-section {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.board-section {
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
+}
+
+.board-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.board-controls button {
+  padding: 10px 20px;
+  background-color: #3d3d3d;
+  color: #f0f0f0;
+  border: 1px solid #5a5a5a;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.board-controls button:hover:not(:disabled) {
+  background-color: #4a4a4a;
+  border-color: #6a6a6a;
+  transform: translateY(-1px);
+}
+
+.board-controls button:disabled {
+  background-color: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.turn-indicator {
+  font-weight: 600;
+  color: #f0f0f0;
+  padding: 8px 16px;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chessboard-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.game-result {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #2a3a2a;
+  border: 2px solid #5a8a5a;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #8aff8a;
+}
+
+.info-section {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 1200px) {
+  .game-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .about-section,
+  .info-section {
+    width: 100%;
+    max-width: 600px;
+  }
+}

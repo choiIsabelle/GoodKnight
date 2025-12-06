@@ -1,0 +1,76 @@
+.about {
+  background-color: #262421;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid #3a3a3a;
+}
+
+.about h3 {
+  margin: 0 0 15px 0;
+  color: #e0e0e0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.about-content {
+  color: #c0c0c0;
+  line-height: 1.6;
+}
+
+.about-content p {
+  margin-bottom: 12px;
+}
+
+.about-content strong {
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+.about-content ul {
+  margin: 10px 0 15px 20px;
+  list-style-type: none;
+}
+
+.about-content ul li {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.about-content ul li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #888;
+}
+
+.github-link {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.github-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #3d3d3d;
+  color: #f0f0f0;
+  text-decoration: none;
+  border: 1px solid #5a5a5a;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.github-button:hover {
+  background-color: #4a4a4a;
+  border-color: #6a6a6a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.github-button svg {
+  flex-shrink: 0;
+}

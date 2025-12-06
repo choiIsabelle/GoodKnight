@@ -1,0 +1,90 @@
+.move-history {
+  background-color: #262421;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid #3a3a3a;
+}
+
+.move-history h3 {
+  margin: 0 0 15px 0;
+  color: #e0e0e0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.moves-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-moves {
+  color: #666;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
+
+.move-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.move-history thead {
+  position: sticky;
+  top: 0;
+  background-color: #1e1d1a;
+  z-index: 1;
+}
+
+.move-history th {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #3a3a3a;
+  font-weight: 600;
+  color: #a0a0a0;
+}
+
+.move-history th:first-child {
+  width: 50px;
+  text-align: center;
+}
+
+.move-history td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #2a2a2a;
+  font-family: 'Courier New', monospace;
+  color: #e0e0e0;
+}
+
+.move-history td:first-child {
+  text-align: center;
+  font-weight: 600;
+  color: #888;
+}
+
+.move-history tbody tr:hover {
+  background-color: #2a2826;
+}
+
+.move-history tbody tr:last-child {
+  background-color: #2a3236;
+}
+
+.moves-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.moves-container::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
