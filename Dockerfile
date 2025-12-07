@@ -14,4 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}/
 
+# Fix file permissions to ensure Lambda can read all files
+RUN chmod -R a+rX ${LAMBDA_TASK_ROOT}
+
 CMD ["lambda_handler.handler"]
