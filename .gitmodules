@@ -1,0 +1,6 @@
+[submodule "src/GoodKnightCommon"]
+	path = src/GoodKnightCommon
+	url = https://github.com/EricHayter/GoodKnightCommon.git
+[submodule "src/GoodKnightModel"]
+	path = src/GoodKnightModel
+	url = https://github.com/mchoi-cs/GoodKnightModel.git
