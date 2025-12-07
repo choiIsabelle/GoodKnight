@@ -1,95 +1,205 @@
-# ChessHacks Starter Bot
+# GoodKnight ♟️
 
-This is a starter bot for ChessHacks. It includes a basic bot and devtools. This is designed to help you get used to what the interface for building a bot feels like, as well as how to scaffold your own bot.
+A hybrid chess engine built at [Chess Hacks](https://chesshacks.dev/) at the University of Waterloo, combining classical chess engine techniques with modern AI evaluation.
 
-## Directory Structure
+**[🎮 Try it live!](https://choiIsabelle.github.io/GoodKnight)**
 
-`/devtools` is a Next.js app that provides a UI for testing your bot. It includes an analysis board that you can use to test your bot and play against your own bot. You do not need to edit, or look at, any of this code (unless you want to). This file should be gitignored. Find out why [here](#installing-devtools-if-you-did-not-run-npx-chesshacks-create).
+## Overview
 
-`/src` is the source code for your bot. You will need to edit this code to implement your own bot.
+GoodKnight merges traditional chess engine approaches with machine learning to create a powerful chess AI:
 
-`serve.py` is the backend that interacts with the Next.js and your bot (`/src/main.py`). It also handles hot reloading of your bot when you make changes to it. This file, after receiving moves from the frontend, will communicate the current board status to your bot as a PGN string, and will send your bot's move back to the frontend. You do not need to edit any of this code (unless you want to).
+- **Classical Engine**: Implements alpha-beta pruning for efficient move tree search
+- **AI Evaluation**: Uses a PyTorch-based neural network to evaluate board positions
+- **Serverless Architecture**: Runs on AWS Lambda for scalable, cost-effective deployment
+- **Modern Frontend**: React-based web interface with real-time game analysis
 
-While developing, you do not need to run either of the Python files yourself. The Next.js app includes the `serve.py` file as a subprocess, and will run it for you when you run `npm run dev`.
+## Architecture
 
-The backend (as a subprocess) will deploy on port `5058` by default.
+```
+┌─────────────────┐
+│  React Frontend │  ← https://choiIsabelle.github.io/GoodKnight
+└────────┬────────┘
+         │ POST /move
+         ▼
+┌─────────────────┐
+│  AWS Lambda     │  ← Chess engine backend
+│  (Docker)       │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌─────────┐ ┌──────────┐
+│ Alpha-  │ │ PyTorch  │
+│ Beta    │ │ Model    │
+│ Pruning │ │ Eval     │
+└─────────┘ └──────────┘
+```
 
-This architecture is very similar to how your bot will run once you deploy it. For more information about how to deploy your bot to the ChessHacks platform, see [the docs](https://docs.chesshacks.dev/).
+## How It Works
 
-## Setup
+1. **Move Generation**: Classical chess engine generates legal moves
+2. **Tree Search**: Alpha-beta pruning explores the game tree efficiently
+3. **Position Evaluation**: PyTorch model evaluates leaf nodes
+4. **Best Move Selection**: Engine returns the highest-scoring move
 
-Start by creating a Python virtual environment and installing the dependencies:
+The hybrid approach combines the speed of classical algorithms with the positional understanding of neural networks.
+
+## Submodules
+
+This project uses the following submodules:
+
+- **[GoodKnightCommon](https://github.com/EricHayter/GoodKnightCommon)** - Shared utilities and board representation
+- **[GoodKnightModel](https://github.com/mchoi-cs/GoodKnightModel)** - PyTorch neural network for position evaluation
+
+## Getting Started
+
+### Prerequisites
+
+- Docker
+- Node.js 18+ (for frontend development)
+- Python 3.12 (for local development without Docker)
+
+### Clone with Submodules
 
 ```bash
+git clone --recursive https://github.com/choiIsabelle/GoodKnight.git
+cd GoodKnight
+```
+
+If you already cloned without `--recursive`:
+```bash
+git submodule update --init --recursive
+```
+
+## Running Locally
+
+### Option 1: Docker (Recommended)
+
+Build and run the Lambda function container:
+
+```bash
+# Build the Docker image
+docker build -t goodknight-lambda .
+
+# Run the container locally (Lambda Runtime Interface Emulator)
+docker run -p 9000:8080 goodknight-lambda
+```
+
+Test the engine:
+```bash
+curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
+  -H "Content-Type: application/json" \
+  -d '{"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}'
+```
+
+### Option 2: Local Python Development
+
+```bash
+# Create virtual environment
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
+pip install -r src/GoodKnightCommon/requirements.txt
+pip install -r src/GoodKnightModel/requirements-cpu.txt
+
+# Run the Lambda handler locally
+python lambda_handler.py
 ```
 
-or however you want to set up your Python.
-
-Then, install the dependencies for the Next.js app:
+### Frontend Development
 
 ```bash
-cd devtools
+cd frontend
+
+# Install dependencies
 npm install
-```
 
-Afterwards, make a copy of `.env.template` and name it `.env.local` (NOT `.env`). Then fill out the values with the path to your Python environment, and the ports you want to use.
-
-> Copy the `.env.local` file to the `devtools` directory as well.
-
-## Installing `devtools` (if you did not run `npx chesshacks create`)
-
-If you started from your own project and only want to add the devtools UI, you can install it with the CLI:
-
-```bash
-npx chesshacks install
-```
-
-This will add a `devtools` folder to your current directory and ensure it is gitignored. If you want to install into a subdirectory, you can pass a path:
-
-```bash
-npx chesshacks install my-existing-bot
-```
-
-In both cases, you can then follow the instructions in [Setup](#setup) and [Running the app](#running-the-app) from inside the `devtools` folder.
-
-## Running the app
-
-Lastly, simply run the Nextjs app inside of the devtools folder.
-
-```bash
-cd devtools
+# Run development server (proxies /lambda to localhost:9000)
 npm run dev
+
+# Build for production
+npm run build
+
+# Deploy to GitHub Pages
+npm run deploy
 ```
 
-## Troubleshooting
+**Environment Variables:**
 
-First, make sure that you aren't running any `python` commands! These devtools are designed to help you play against your bot and see how its predictions are working. You can see [Setup](#setup) and [Running the app](#running-the-app) above for information on how to run the app. You should be running the Next.js app, not the Python files directly!
+The frontend uses `VITE_CHESS_API_ENDPOINT` to configure the API endpoint:
 
-If you get an error like this:
+- **Local development**: Uses `/lambda` (proxied to `http://localhost:9000` via Vite)
+- **Production**: Set via environment variable during build:
+  ```bash
+  VITE_CHESS_API_ENDPOINT=https://your-lambda-url.on.aws/ npm run build
+  ```
 
-```python
-Traceback (most recent call last):
-  File "/Users/obama/dev/chesshacks//src/main.py", line 1, in <module>
-    from .utils import chess_manager, GameContext
-ImportError: attempted relative import with no known parent package
+## Project Structure
+
+```
+GoodKnight/
+├── frontend/              # React web interface
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   └── services/      # API client
+│   └── vite.config.js     # Vite configuration
+├── src/                   # Chess engine source
+│   ├── GoodKnightCommon/  # Submodule: shared utilities
+│   ├── GoodKnightModel/   # Submodule: PyTorch model
+│   └── main.py           # Engine entry point
+├── lambda_handler.py     # AWS Lambda handler
+├── Dockerfile            # Lambda container image
+└── requirements.txt      # Python dependencies
 ```
 
-you might think that you should remove the period before `utils` and that will fix the issue. But in reality, this will just cause more problems in the future! You aren't supposed to run `main.py ` on your own—it's designed for `serve.py` to run it for you within the subprocess. Removing the period would cause it to break during that step.
+## Deployment
 
-### Logs
+### AWS Lambda
 
-Once you run the app, you should see logs from both the Next.js app and the Python subprocess, which includes both `serve.py` and `main.py`. `stdout`s and `stderr`s from both Python files will show in your Next.js terminal. They are designed to be fairly verbose by default.
+1. Build the Docker image:
+   ```bash
+   docker build -t goodknight-lambda .
+   ```
 
-## HMR (Hot Module Reloading)
+2. Push to Amazon ECR and deploy to Lambda (see [AWS Lambda Container Images](https://docs.aws.amazon.com/lambda/latest/dg/images-create.html))
 
-By default, the Next.js app will automatically reload (dismount and remount the subprocess) when you make changes to the code in `/src` OR press the manual reload button on the frontend. This is called HMR (Hot Module Reloading). This means that you don't need to restart the app every time you make a change to the Python code. You can see how it's happening in real-time in the Next.js terminal.
+3. Configure Lambda:
+   - Memory: 1024 MB+ (higher = faster execution)
+   - Timeout: 3 minutes
+   - Function URL: Enable for public access
 
-## Parting Words
+### GitHub Pages
 
-Keep in mind that you fully own all of this code! This entire devtool system runs locally, so feel free to modify it however you want. This is just designed as scaffolding to help you get started.
+The frontend automatically deploys to GitHub Pages via the `gh-pages` branch.
 
-If you need further help, please first check out the [docs](https://docs.chesshacks.dev/). If you still need help, please join our [Discord](https://docs.chesshacks.dev/resources/discord) and ask for help.
-# GoodKnight
+Set up GitHub Actions with your Lambda URL:
+```yaml
+- name: Build and Deploy
+  env:
+    VITE_CHESS_API_ENDPOINT: https://your-lambda-url.lambda-url.us-east-1.on.aws/
+  run: |
+    cd frontend
+    npm install
+    npm run deploy
+```
+
+## Technologies
+
+- **Backend**: Python, PyTorch, AWS Lambda
+- **Frontend**: React, Vite, react-chessboard
+- **Chess Logic**: chess.js, python-chess
+- **Infrastructure**: Docker, GitHub Pages
+
+## Contributors
+
+Built during Chess Hacks at the University of Waterloo.
+
+- [@choiIsabelle](https://github.com/choiIsabelle)
+- [@EricHayter](https://github.com/EricHayter)
+- [@mchoi-cs](https://github.com/mchoi-cs)
+
+## License
+
+MIT
