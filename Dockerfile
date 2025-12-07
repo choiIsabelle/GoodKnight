@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.12
 # Copy only requirements files first (cached unless dependencies change)
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 COPY src/GoodKnightCommon/requirements.txt ${LAMBDA_TASK_ROOT}/GoodKnightCommon-requirements.txt
-COPY src/GoodKnightModel/requirements.txt ${LAMBDA_TASK_ROOT}/GoodKnightModel-requirements.txt
+COPY src/GoodKnightModel/requirements-cpu.txt ${LAMBDA_TASK_ROOT}/GoodKnightModel-requirements.txt
 
 # Install all dependencies in one layer
 RUN pip install --no-cache-dir -r requirements.txt && \
