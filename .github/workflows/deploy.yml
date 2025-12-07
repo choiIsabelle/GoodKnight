@@ -1,54 +1,54 @@
-name: Deploy Vite Site to GitHub Pages
+# name: Deploy Vite Site to GitHub Pages
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+# permissions:
+#   contents: write
+#   pages: write
+#   id-token: write
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
 
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: npm ci
+#       - name: Install dependencies
+#         working-directory: ./frontend
+#         run: npm ci
 
-      - name: Inject Environment Variable
-        working-directory: ./frontend
-        run: |
-          echo "VITE_CHESS_API_ENDPOINT=${{ vars.VITE_CHESS_API_ENDPOINT }}" >> $GITHUB_ENV
+#       - name: Inject Environment Variable
+#         working-directory: ./frontend
+#         run: |
+#           echo "VITE_CHESS_API_ENDPOINT=${{ vars.VITE_CHESS_API_ENDPOINT }}" >> $GITHUB_ENV
 
-      - name: Build
-        working-directory: ./frontend
-        run: npm run build
+#       - name: Build
+#         working-directory: ./frontend
+#         run: npm run build
 
-      - name: Upload Build Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
+#       - name: Upload Build Artifact
+#         uses: actions/upload-pages-artifact@v3
+#         with:
+#           path: frontend/dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages   # 👈 required by deploy-pages@v4
-      url: ${{ steps.deployment.outputs.page_url }}
+#   deploy:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: github-pages   # 👈 required by deploy-pages@v4
+#       url: ${{ steps.deployment.outputs.page_url }}
 
-    steps:
-      - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+#     steps:
+#       - name: Deploy to GitHub Pages
+#       id: deployment
+#       uses: actions/deploy-pages@v4
