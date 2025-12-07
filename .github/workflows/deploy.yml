@@ -24,19 +24,22 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm ci
 
       - name: Inject Environment Variable
+        working-directory: ./frontend
         run: |
           echo "VITE_CHESS_API_ENDPOINT=${{ vars.VITE_CHESS_API_ENDPOINT }}" >> $GITHUB_ENV
 
       - name: Build
+        working-directory: ./frontend
         run: npm run build
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: frontend/dist
 
   deploy:
     needs: build
